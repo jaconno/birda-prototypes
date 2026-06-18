@@ -53,7 +53,7 @@ When a new prototype is added:
 
 ## Design conventions
 
-- **Primary colour**: lime green `#A8E63D` / `#7ABF1A`
+- **Primary colour**: blue `#1F87FE` / `#0F6FE8`
 - **Background**: off-white `#F4F4EE`
 - **Style guide**: Apple HIG — system fonts, rounded corners, blurred sticky nav
 - **Mobile prototypes**: max-width 430px, include iOS status bar mock
