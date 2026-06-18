@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCM Provider Pricing Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Rubik:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --primary: #1F87FE;
+  --primary-light: #e8f3ff;
+  --primary-mid: #a8d0fe;
+  --secondary: #20A39E;
+  --secondary-light: #e6f7f6;
+  --secondary-mid: #9adbd9;
+  --neutral: #2D3142;
+  --neutral-mid: #6b7080;
+  --neutral-light: #f4f5f7;
+  --bg: #ffffff;
+  --surface: #f8f9fb;
+  --surface2: #eef1f5;
+  --border: rgba(45,49,66,0.1);
+  --border2: rgba(45,49,66,0.18);
+  --text: #2D3142;
+  --text2: #6b7080;
+  --text3: #9ea4b4;
+  --amber: #d97706;
+  --amber-bg: #fef3c7;
+  --green: #059669;
+  --green-bg: #d1fae5;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Rubik', sans-serif;
+  --radius: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* header */
+.header{padding:0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:stretch;flex-wrap:wrap}
+.header-left{padding:1.75rem 4rem;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center}
+.birda-wordmark{display:flex;align-items:center;gap:10px;margin-bottom:.6rem}
+.birda-icon{width:28px;height:28px;border-radius:7px;background:var(--primary);display:flex;align-items:center;justify-content:center}
+.birda-icon svg{width:16px;height:16px;fill:white}
+.birda-name{font-family:var(--sans);font-size:15px;font-weight:600;color:var(--neutral);letter-spacing:-.01em}
+.logo-line{font-size:11px;color:var(--text3);letter-spacing:.04em;margin-bottom:.4rem}
+.title{font-size:24px;font-weight:300;color:var(--text);letter-spacing:-.02em}
+.title strong{font-weight:600;color:var(--primary)}
+.header-meta{padding:1.75rem 4rem;text-align:right;font-family:var(--mono);font-size:11px;color:var(--text3);line-height:2;display:flex;flex-direction:column;justify-content:center}
+.header-meta span{display:block}
+.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--secondary);margin-right:6px;vertical-align:middle}
+
+/* tabs */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 4rem;background:var(--bg)}
+.tab-btn{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:.8rem 1.25rem;border:none;background:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+.tab-panel{display:none;padding:2rem 4rem}
+.tab-panel.active{display:block}
+
+/* section heads */
+.section-head{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* month cards */
+.month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:2rem}
+.month-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.month-card .mname{font-family:var(--mono);font-size:10px;color:var(--primary);letter-spacing:.08em;margin-bottom:10px;text-transform:uppercase;font-weight:500}
+.month-card .row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)}
+.month-card .row:last-child{border-bottom:none}
+.month-card .row .k{color:var(--text3)}
+.month-card .row .v{font-family:var(--mono);color:var(--text);font-size:11px}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:2.5rem}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.metric .mlbl{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.metric .mval{font-size:22px;font-weight:500;color:var(--primary);letter-spacing:-.02em}
+.metric .msub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* controls */
+.controls{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+.controls label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+select{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;border-radius:6px;cursor:pointer;outline:none}
+select:focus{border-color:var(--primary)}
+
+/* provider grid */
+.provider-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:2rem}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,box-shadow .15s}
+.pcard:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(31,135,254,0.07)}
+.pcard.featured{border-color:rgba(31,135,254,.35);background:var(--primary-light)}
+.pcard-top{display:flex;justify-content:space-between;align-items:flex-start;min-height:40px}
+.pname{font-size:15px;font-weight:500;color:var(--text);letter-spacing:-.01em;line-height:1.3;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.badge{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;margin-left:6px;align-self:flex-start}
+.badge-green{background:var(--primary-light);color:var(--primary)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-blue{background:var(--secondary-light);color:var(--secondary)}
+.pmodel{font-size:12px;color:var(--text2);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:35px}
+.price-block{background:var(--surface2);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;align-items:baseline}
+.price-est{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--neutral)}
+.price-range{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.channels{display:flex;flex-wrap:nowrap;gap:5px;overflow:hidden;height:22px;align-items:center}
+.chip{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid var(--border2);color:var(--text3);white-space:nowrap;flex-shrink:0}
+.chip.inc{border-color:rgba(32,163,158,.3);color:var(--secondary);background:var(--secondary-light)}
+.pnote{font-size:12px;color:var(--text2);line-height:1.5;border-top:1px solid var(--border);padding-top:10px;flex:1}
+.pnote-text{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5}
+.conf{font-family:var(--mono);font-size:10px;color:var(--text3);display:block;padding-top:8px;margin-top:8px;border-top:1px solid var(--border)}
+.mau-tag{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;background:var(--primary-light);color:var(--primary);letter-spacing:.04em;font-weight:500}
+.scenario-table{width:100%;border-collapse:collapse;margin-top:2px}
+.scenario-table th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:5px 6px;text-align:right;border-bottom:1px solid var(--border);font-weight:400}
+.scenario-table th:first-child{text-align:left}
+.scenario-table td{font-family:var(--mono);font-size:11px;padding:5px 6px;border-bottom:1px solid var(--border);text-align:right;color:var(--text)}
+.scenario-table td:first-child{text-align:left;color:var(--text3);font-size:10px}
+.scenario-table tr:last-child td{border-bottom:none}
+.scenario-table .hi{color:var(--primary);font-weight:500}
+.scenario-table .range-cell{font-size:10px;color:var(--text2)}
+.scen-head{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:6px}
+.scenario-selector{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.scen-btn{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:6px 14px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text3);cursor:pointer;transition:all .15s}
+.scen-btn:hover{border-color:var(--primary);color:var(--primary)}
+.scen-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.vol-key{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem}
+.vol-key-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;display:flex;flex-direction:column;gap:2px;width:180px;flex-shrink:0}
+.vol-key-card .vk-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);margin-bottom:4px}
+.vol-key-card .vk-row{display:flex;justify-content:space-between;gap:16px;font-size:12px}
+.vol-key-card .vk-row .vk-k{color:var(--text3)}
+.vol-key-card .vk-row .vk-v{font-family:var(--mono);font-size:11px;color:var(--text)}
+.compare-table{width:100%;border-collapse:collapse;min-width:640px}
+.compare-table .scen-group-header th{font-family:var(--sans);font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;padding:10px 12px;text-align:center;border-bottom:1px solid var(--border)}
+.compare-table .scen-group-header th:first-child{text-align:left;border-right:1px solid var(--border2)}
+.compare-table .scen-group-header .th-current{background:var(--primary-light);color:var(--primary);border-radius:4px 4px 0 0}
+.compare-table .scen-group-header .th-80k{background:#f0f7ee;color:#2d6a1f}
+.compare-table .scen-group-header .th-110k{background:#fdf4e7;color:#7a4d0a}
+.compare-table .sub-header th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:4px 12px 6px;text-align:right;border-bottom:2px solid var(--border);font-weight:400;white-space:nowrap}
+.compare-table .sub-header th:first-child{text-align:left;border-right:1px solid var(--border2)}
+.compare-table .sub-header .sub-sep{border-left:1px solid var(--border)}
+.compare-table tbody tr{transition:background .1s}
+.compare-table tbody tr:hover{background:var(--surface2)}
+.compare-table tbody tr:last-child td{border-bottom:none}
+.compare-table td{font-family:var(--mono);font-size:12px;padding:10px 12px;border-bottom:1px solid var(--border);text-align:right;color:var(--text);vertical-align:middle}
+.compare-table td:first-child{text-align:left;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--text);border-right:1px solid var(--border2);min-width:140px}
+.compare-table .sep-col{border-left:1px solid var(--border)}
+.compare-table .low{color:var(--text2);font-size:11px}
+.compare-table .mid{color:var(--text);font-weight:500}
+.compare-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:auto;margin-bottom:1.5rem}
+
+/* chart */
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:2rem}
+.chart-legend{display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.chart-legend span{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--text3)}
+.chart-legend .dot{width:10px;height:10px;border-radius:2px}
+
+/* assumptions */
+.assumption-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:2rem}
+.acard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.acard-title{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--primary);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.acard table{width:100%;border-collapse:collapse}
+.acard td{padding:6px 0;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top}
+.acard td:first-child{color:var(--text3);width:55%;padding-right:12px}
+.acard td:last-child{font-family:var(--mono);font-size:11px;color:var(--text);text-align:right}
+.acard tr:last-child td{border-bottom:none}
+.caveat-box{background:var(--amber-bg);border:1px solid rgba(217,119,6,.2);border-radius:var(--radius);padding:18px;margin-bottom:2rem}
+.caveat-title{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px}
+.caveat-list{list-style:none;padding:0}
+.caveat-list li{font-size:13px;color:#92400e;padding:4px 0 4px 16px;position:relative;line-height:1.5}
+.caveat-list li::before{content:"—";position:absolute;left:0;color:var(--amber)}
+.method-box{background:var(--secondary-light);border:1px solid rgba(32,163,158,.2);border-radius:var(--radius);padding:18px;margin-bottom:2rem}
+.method-box .acard-title{color:var(--secondary)}
+.method-box p{font-size:13px;color:#134e4a;line-height:1.7;margin-bottom:.75rem}
+.method-box p:last-child{margin-bottom:0}
+
+.notif-section{margin-top:2rem}
+.notif-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg)}
+.notif-table{width:100%;border-collapse:collapse;min-width:700px}
+.notif-table thead tr:first-child th{font-family:var(--sans);font-size:11px;font-weight:500;padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);color:var(--text2);white-space:nowrap;background:var(--surface)}
+.notif-table thead tr:first-child th:first-child{text-align:left;border-right:1px solid var(--border)}
+.notif-table thead tr.sub-head th{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:4px 12px 6px;text-align:right;border-bottom:2px solid var(--border2)}
+.notif-table thead tr.sub-head th:first-child{text-align:left;border-right:1px solid var(--border)}
+.notif-table .col-sep{border-left:1px solid var(--border)}
+.notif-table tbody tr:hover{background:var(--surface)}
+.notif-table td{font-size:12px;padding:7px 12px;border-bottom:1px solid var(--border);text-align:right;color:var(--text);vertical-align:middle}
+.notif-table td:first-child{font-family:var(--mono);font-size:11px;text-align:left;color:var(--text2);border-right:1px solid var(--border);white-space:nowrap}
+.notif-table tbody tr:last-child td{border-bottom:none;font-weight:500;color:var(--text);background:var(--surface);font-family:var(--mono);font-size:11px}
+.notif-table .pct{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.notif-table .cost{font-family:var(--mono);font-size:11px;color:var(--secondary)}
+.notif-note{font-size:12px;color:var(--text3);margin-top:10px;line-height:1.6;padding:8px 12px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border)}
+.footer{padding:1rem 4rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface)}
+.footer-left{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.footer-right{font-family:var(--mono);font-size:11px;color:var(--text3)}
+
+@media(min-width:1100px){
+  .provider-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:1099px) and (min-width:640px){
+  .provider-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:639px){
+  .provider-grid{grid-template-columns:1fr}
+  .header{flex-direction:column}
+  .header-left{border-right:none;border-bottom:1px solid var(--border)}
+  .header-meta{text-align:left;padding:1rem 1.5rem}
+  .tabs{padding:0 1.5rem}
+  .tab-panel{padding:1.5rem 2rem}
+  .scenario-selector{gap:4px}
+  .scen-btn{padding:5px 10px;font-size:10px}
+  .tab-btn{padding:.6rem .75rem;font-size:10px}
+  .title{font-size:18px}
+  .compare-wrap{font-size:11px}
+  .compare-table td,.compare-table th{padding:5px 5px}
+  .vol-key{flex-wrap:wrap}
+}
+@media(max-width:900px){
+  .header-left{border-right:none}
+}
+.growth-toggles{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem}
+.gtoggle{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:6px;border:1.5px solid;cursor:pointer;transition:opacity .15s;background:transparent;display:flex;align-items:center;gap:6px}
+.gtoggle.off{opacity:.35}
+.gtoggle .gt-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.growth-note{font-size:12px;color:var(--text3);line-height:1.6;padding:10px 14px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="birda-wordmark">
+      <div class="birda-icon">
+        <svg viewBox="0 0 16 16"><path d="M2 10C3.5 7 6 5.5 9 6.5C10.5 7 11.5 8.5 12 10" stroke="white" stroke-width="1.4" stroke-linecap="round" fill="none"/><circle cx="12.5" cy="5.5" r="2" fill="white"/><path d="M1.5 12.5 Q8 9.5 14.5 12.5" stroke="white" stroke-width="1.1" stroke-linecap="round" fill="none" opacity="0.6"/></svg>
+      </div>
+      <span class="birda-name">Birda</span>
+    </div>
+    <div class="logo-line">Internal analysis — commercial in confidence</div>
+    <div class="title">LCM Provider <strong>Pricing Analysis</strong></div>
+  </div>
+  <div class="header-meta">
+    <span><span class="status-dot"></span>Based on Jan–Apr 2026 data</span>
+    <span>Estimates in GBP (USD × 0.80)</span>
+    <span>Last updated May 2026</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('providers', this)">Providers</button>
+  <button class="tab-btn" onclick="showTab('overview', this)">Volume</button>
+  <button class="tab-btn" onclick="showTab('growth', this)">Growth</button>
+  <button class="tab-btn" onclick="showTab('assumptions', this)">Assumptions</button>
+</div>
+
+<!-- GROWTH TAB -->
+<div class="tab-panel" id="tab-growth">
+  <div class="section-head">Estimated annual cost as MAU grows — current to 150k</div>
+  <div class="growth-toggles" id="growthToggles"></div>
+  <div class="chart-box" style="margin-bottom:1rem">
+    <div style="position:relative;width:100%;height:420px">
+      <canvas id="growthChart" role="img" aria-label="Line chart showing estimated annual cost per provider as MAU grows from current to 150k">Provider cost growth from current MAU to 150k.</canvas>
+    </div>
+  </div>
+  <div class="growth-note">Cost estimates use the same pricing models as the Providers tab. Shaded bands show the low–high range per provider. Volumes (email, push &amp; in-app combined) scale proportionally with MAU throughout.</div>
+</div>
+
+<!-- OVERVIEW TAB -->
+<div class="tab-panel" id="tab-overview">
+  <div class="section-head">Monthly volumes — Jan to Apr 2026</div>
+  <div class="month-grid" id="monthGrid"></div>
+
+  <div class="section-head">Average monthly totals</div>
+  <div class="metrics" id="metricGrid"></div>
+
+  <div class="notif-section">
+    <div class="section-head">Push &amp; in-app breakdown by notification type</div>
+    <div class="notif-table-wrap">
+      <table class="notif-table">
+        <thead>
+          <tr>
+            <th rowspan="2">Notification type</th>
+            <th colspan="3">Jan 2026</th>
+            <th colspan="3" class="col-sep">Feb 2026</th>
+            <th colspan="3" class="col-sep">Mar 2026</th>
+            <th colspan="3" class="col-sep">Apr 2026</th>
+          </tr>
+          <tr class="sub-head">
+            <th>Count</th><th>% total</th><th>Est. cost</th>
+            <th class="col-sep">Count</th><th>% total</th><th>Est. cost</th>
+            <th class="col-sep">Count</th><th>% total</th><th>Est. cost</th>
+            <th class="col-sep">Count</th><th>% total</th><th>Est. cost</th>
+          </tr>
+        </thead>
+        <tbody id="notifBody"></tbody>
+      </table>
+    </div>
+    <div class="notif-note" id="notifNote"></div>
+  </div>
+
+</div>
+
+<!-- PROVIDERS TAB -->
+<div class="tab-panel active" id="tab-providers">
+  <div class="scenario-selector">
+    <button class="scen-btn" data-scen="compare" onclick="setScenario(this)">Comparison</button>
+    <button class="scen-btn active" data-scen="avg" onclick="setScenario(this)">Current MAU</button>
+    <button class="scen-btn" data-scen="80k" onclick="setScenario(this)">80k MAU</button>
+    <button class="scen-btn" data-scen="110k" onclick="setScenario(this)">110k MAU</button>
+  </div>
+  <div class="vol-key" id="volKey"></div>
+  <div class="provider-grid" id="providerGrid"></div>
+
+  <div id="overviewChartWrap">
+  <div class="section-head" style="display:flex;align-items:center;gap:8px">Annual cost comparison (all providers) <span class="mau-tag" id="chartMauTag"></span></div>
+  <div class="chart-box">
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#1F87FE"></span>Mid estimate</span>
+      <span><span class="dot" style="background:#a8d0fe"></span>Range</span>
+    </div>
+    <div style="position:relative;width:100%;height:300px">
+      <canvas id="overviewChart" role="img" aria-label="Bar chart comparing estimated annual costs across LCM providers in GBP">Annual LCM provider cost comparison.</canvas>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ASSUMPTIONS TAB -->
+<div class="tab-panel" id="tab-assumptions">
+  <div class="assumption-grid">
+    <div class="acard">
+      <div class="acard-title">Volume data</div>
+      <table>
+        <tr><td>Source</td><td>Google Sheets (manual export from BigQuery)</td></tr>
+        <tr><td>Period</td><td>Jan–Apr 2026 (4 months)</td></tr>
+        <tr><td>Avg emails/mo</td><td>406,250</td></tr>
+        <tr><td>Avg push/mo</td><td>350,000</td></tr>
+        <tr><td>Avg push & in-app/mo</td><td id="asmAvgPush">—</td></tr>
+        <tr><td>Current MAU (Apr 2026)</td><td id="asmCurMAU">62,000</td></tr>
+        <tr><td>Peak MAU</td><td id="asmPeakMAU">62,000 (Apr 2026)</td></tr>
+        <tr><td>Push/in-app split</td><td>Not broken down by type</td></tr>
+        <tr><td>Scenario: 80k</td><td>Volumes scaled proportionally to MAU</td></tr>
+        <tr><td>Scenario: 110k</td><td>Volumes scaled proportionally to MAU</td></tr>
+        <tr><td>Scenario basis</td><td>All scenarios use peak-month MAU for tier</td></tr>
+      </table>
+    </div>
+    <div class="acard">
+      <div class="acard-title">Pricing assumptions</div>
+      <table>
+        <tr><td>Currency conversion</td><td>USD × 0.80 = GBP</td></tr>
+        <tr><td>Contract basis</td><td>Annual prepay (best available rate)</td></tr>
+        <tr><td>MAU basis</td><td id="asmMAUBasis">April 2026 actual (62k)</td></tr>
+        <tr><td>Volume scaling</td><td id="asmVolScale">Proportional to MAU ratio vs Apr 2026 (62k)</td></tr>
+        <tr><td>Negotiation discount</td><td>Not applied (list/benchmark rates)</td></tr>
+        <tr><td>SMS</td><td>Excluded — not in current volumes</td></tr>
+        <tr><td>WhatsApp</td><td>Excluded</td></tr>
+        <tr><td>Implementation/onboarding</td><td>Excluded (one-time)</td></tr>
+        <tr><td>Overage fees</td><td>Excluded</td></tr>
+      </table>
+    </div>
+    <div class="acard">
+      <div class="acard-title">Provider pricing models</div>
+      <table>
+        <tr><td>Customer.io</td><td>Profile-based; push + in-app unlimited</td></tr>
+        <tr><td>MoEngage</td><td>MAU-based; Growth tier for 50k+ MAU</td></tr>
+        <tr><td>CleverTap</td><td>MAU-based; Advanced tier custom-quoted</td></tr>
+        <tr><td>Iterable</td><td>MAU + volume; Growth tier custom-quoted</td></tr>
+        <tr><td>Braze</td><td>Engagement value-based; Core tier entry</td></tr>
+        <tr><td>OneSignal</td><td>MAU for push; per-send for email</td></tr>
+        <tr><td>Airship</td><td>MAU-based; custom quotes; push-native</td></tr>
+        <tr><td>Pushwoosh</td><td>$13/1k MAU omnichannel; all channels included</td></tr>
+        <tr><td>Knock</td><td>Per-message; Starter $250/mo; Enterprise custom</td></tr>
+      </table>
+    </div>
+    <div class="acard">
+      <div class="acard-title">Data sources</div>
+      <table>
+        <tr><td>Customer.io</td><td>Published pricing (docs.customer.io)</td></tr>
+        <tr><td>MoEngage</td><td>Published + Vendr benchmarks</td></tr>
+        <tr><td>CleverTap</td><td>Published (Essentials) + community data</td></tr>
+        <tr><td>Iterable</td><td>Vendr transaction database</td></tr>
+        <tr><td>Braze</td><td>Community benchmarks; SaasBlueBook Mar 2026</td></tr>
+        <tr><td>OneSignal</td><td>Published pricing + CheckThat analysis</td></tr>
+        <tr><td>Airship</td><td>Vendr transaction data + StackScored Apr 2026</td></tr>
+        <tr><td>Pushwoosh</td><td>Published pricing — pushwoosh.com/pricing</td></tr>
+        <tr><td>Knock</td><td>Published pricing — knock.app/pricing</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="caveat-box">
+    <div class="caveat-title">Caveats and limitations</div>
+    <ul class="caveat-list">
+      <li>None of these providers publish official rate cards. All estimates are based on third-party procurement benchmarks, Vendr anonymised transaction data, and community-reported contracts.</li>
+      <li>Actual quotes will vary significantly based on negotiation leverage, contract length, feature tier selected, and whether you are a new or returning customer.</li>
+      <li>Braze, Iterable, and MoEngage all require a sales conversation to get a real number. Expect 2–4 week sales cycles before a formal proposal.</li>
+      <li>The 4-month data window is short. MAU is growing (38k → 62k Jan–Apr 2026); providers will likely want to model projected annual peak MAU, not current figures. This changes the tier and the price.</li>
+      <li>Customer.io's "unlimited push + in-app" is subject to a fair-use policy of 60× profile count per month. At 62k profiles that cap is 3.72M — well above current combined push &amp; in-app volumes.</li>
+      <li>Braze and MoEngage typically negotiate on multi-year commits (15–25% discount), which could meaningfully reduce the ranges shown.</li>
+      <li>GBP conversion uses a flat 0.80 rate. All contracts will be denominated in USD.</li>
+      <li>The 80k and 110k scenarios assume email, push, and in-app volumes scale linearly with MAU. In practice, engagement rates may improve or decline at scale — treat these as directional cost ceilings, not forecasts.</li>
+      <li>Pushwoosh scenario costs are formulaic and precise. All other providers' scenario costs are modelled estimates based on published tier ladders or community benchmark rates — they should be verified with a direct quote at each threshold.</li>
+      <li>Implementation, migration, professional services, and dedicated CSM costs are excluded and can add £20k–£80k one-time for enterprise platforms.</li>
+    </ul>
+  </div>
+
+  <div class="method-box">
+    <div class="acard-title">Methodology</div>
+    <p>Volume data was provided directly from an internal Google Sheet export (Jan–Apr 2026), covering emails sent, push sent, in-app sent, and MAU for the Explore product. Monthly averages were computed across the four months.</p>
+    <p>Provider pricing estimates were derived by searching pricing pages, Vendr procurement benchmarks, SaasBlueBook (last verified March 2026), and published third-party analyses in May 2026. Where published pricing exists (Customer.io, OneSignal, CleverTap Essentials tier), that was used directly. Where only ranges exist (Braze, Iterable, MoEngage), the ranges reflect community-reported contract values for comparable MAU brackets.</p>
+    <p>Peak MAU (62k) was used as the basis for tier assignment, as enterprise providers contract on peak-month MAU, not average. Annual cost estimates multiply monthly platform costs by 12, with no adjustments for growth, overages, or negotiation discounts.</p>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-left">Confidential — internal use only</div>
+  <div class="footer-right">Data: Jan–Apr 2026 · Prices: May 2026 estimates</div>
+</div>
+
+<script>
+const rawData=[
+  {month:"Jan 2026",emails:660000,push:94000,inapp:0,mau:38000},
+  {month:"Feb 2026",emails:230000,push:79500,inapp:0,mau:46000},
+  {month:"Mar 2026",emails:300000,push:89000,inapp:0,mau:47000},
+  {month:"Apr 2026",emails:435000,push:98000,inapp:0,mau:62000}
+];
+
+function avg(arr){return arr.reduce((a,b)=>a+b,0)/arr.length}
+function fmt(n){return n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?Math.round(n/1e3)+"k":n}
+function gbp(n){return "£"+Math.round(n).toLocaleString("en-GB")}
+
+const avgMAU=Math.round(avg(rawData.map(d=>d.mau)));
+const avgEmail=Math.round(avg(rawData.map(d=>d.emails)));
+const avgPush=Math.round(avg(rawData.map(d=>d.push)));
+const avgInapp=Math.round(avg(rawData.map(d=>d.inapp)));
+const latestEntry=rawData[rawData.length-1];
+const latestMAU=latestEntry.mau;
+const latestMonth=latestEntry.month;
+const firstMAU=rawData[0].mau;
+
+function updateAssumptionCells(){
+  const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  setEl('asmCurMAU',latestMAU.toLocaleString('en-GB'));
+  setEl('asmPeakMAU',latestMAU.toLocaleString('en-GB')+' ('+latestMonth+')');
+  setEl('asmMAUBasis',latestMonth+' actual ('+fmt(latestMAU)+')');
+  setEl('asmVolScale','Proportional to MAU ratio vs '+latestMonth+' ('+fmt(latestMAU)+')');
+  setEl('asmAvgPush',fmt(Math.round(avg(rawData.map(d=>d.push)))));
+}
+
+document.getElementById("monthGrid").innerHTML=rawData.map(d=>`
+<div class="month-card">
+  <div class="mname">${d.month}</div>
+  <div class="row"><span class="k">Emails</span><span class="v">${fmt(d.emails)}</span></div>
+  <div class="row"><span class="k">Push & in-app</span><span class="v">${fmt(d.push)}</span></div>
+  <div class="row"><span class="k">MAU</span><span class="v">${fmt(d.mau)}</span></div>
+</div>`).join("");
+
+document.getElementById("metricGrid").innerHTML=[
+  {lbl:"Avg emails/mo",val:fmt(avgEmail),sub:"Peak 660k (Jan)"},
+  {lbl:"Push & in-app/mo",val:fmt(avgPush),sub:"Peak 98k (Apr) — combined"},
+  {lbl:"Current MAU",val:fmt(rawData[rawData.length-1].mau),sub:"April 2026 actual"}
+].map(m=>`<div class="metric"><div class="mlbl">${m.lbl}</div><div class="mval">${m.val}</div><div class="msub">${m.sub}</div></div>`).join("");
+
+const BASE_MAU = 62000;
+const BASE_EMAIL = 435000;
+const BASE_PUSH = 98000;
+const BASE_INAPP = 0;
+
+const SCENARIOS = [
+  { label: 'Current MAU',  mau: BASE_MAU },
+  { label: '80k MAU',      mau: 80000   },
+  { label: '110k MAU',     mau: 110000  },
+];
+
+function scaleVols(mau) {
+  const r = mau / BASE_MAU;
+  return {
+    email: Math.round(BASE_EMAIL * r),
+    push:  Math.round(BASE_PUSH  * r),
+    inapp: Math.round(BASE_INAPP * r),
+    mau,
+  };
+}
+
+function estimateAnnual(providerName, mau) {
+  const GBP = 0.80;
+  const v = scaleVols(mau);
+
+  switch (providerName) {
+    case 'Customer.io': {
+      const profileCostUSD = Math.max(100, mau * 0.012);
+      const emailOverage   = Math.max(0, v.email - 1000000) * 0.001;
+      const monthlyUSD     = profileCostUSD + emailOverage;
+      const annual         = monthlyUSD * 12 * GBP;
+      return { low: Math.round(annual * 0.85), high: Math.round(annual * 1.20) };
+    }
+    case 'OneSignal': {
+      const pushUSD  = Math.max(19, mau * 0.012);
+      const emailUSD = v.email * 0.001;
+      const annual   = (pushUSD + emailUSD) * 12 * GBP;
+      return { low: Math.round(annual * 0.85), high: Math.round(annual * 1.20) };
+    }
+    case 'CleverTap': {
+      const ratePerMAU = 0.045;
+      const monthlyUSD = Math.max(500, mau * ratePerMAU);
+      const annual     = monthlyUSD * 12 * GBP;
+      return { low: Math.round(annual * 0.75), high: Math.round(annual * 1.35) };
+    }
+    case 'MoEngage': {
+      let monthlyUSD;
+      if (mau <= 10000)       monthlyUSD = 999;
+      else if (mau <= 50000)  monthlyUSD = 2999;
+      else if (mau <= 100000) monthlyUSD = 4999;
+      else                    monthlyUSD = 7999;
+      const annual = monthlyUSD * 12 * GBP;
+      return { low: Math.round(annual * 0.80), high: Math.round(annual * 1.10) };
+    }
+    case 'Iterable': {
+      const ratePerMAU = 0.075;
+      const monthlyUSD = Math.max(3000, mau * ratePerMAU);
+      const annual     = monthlyUSD * 12 * GBP;
+      return { low: Math.round(annual * 0.80), high: Math.round(annual * 1.15) };
+    }
+    case 'Braze': {
+      const ratePerMAU = 0.095;
+      const monthlyUSD = Math.max(5000, mau * ratePerMAU);
+      const annual     = monthlyUSD * 12 * GBP;
+      return { low: Math.round(annual * 0.80), high: Math.round(annual * 1.20) };
+    }
+    case 'Airship': {
+      const ratePerMAU = 0.065;
+      const monthlyUSD = Math.max(2000, mau * ratePerMAU);
+      const annual     = monthlyUSD * 12 * GBP;
+      return { low: Math.round(annual * 0.75), high: Math.round(annual * 1.30) };
+    }
+    case 'Pushwoosh': {
+      const monthlyUSD = (mau / 1000) * 13;
+      const includedEmail = mau * 20;
+      const extraEmailUSD = Math.max(0, v.email - includedEmail) / 1000 * 1.50;
+      const annual = (monthlyUSD + extraEmailUSD) * 12 * GBP;
+      return { low: Math.round(annual * 0.95), high: Math.round(annual * 1.10) };
+    }
+    case 'Knock': {
+      const totalMsgs  = v.email + v.push + v.inapp;
+      const base       = 250;
+      const overage    = Math.max(0, totalMsgs - 50000) * 0.005;
+      const monthlyUSD = base + overage;
+      const annual     = monthlyUSD * 12 * GBP;
+      return { low: Math.round(annual * 0.80), high: Math.round(annual * 1.20) };
+    }
+    default:
+      return { low: 0, high: 0 };
+  }
+}
+
+const providers=[
+  {name:"Customer.io",model:"Profile-based. Unlimited push + in-app. Email billed per send above 1M/mo.",featured:true,badge:"Best fit",badgeClass:"badge-green",channels:["Email","Push","In-app","SMS"],note:"Push + in-app fully included on all plans. Only January approaches the 1M email threshold. Most transparent pricing of any provider considered.",confidence:"Published pricing — customer.io/pricing"},
+  {name:"OneSignal",model:"MAU for push; per-send for email (~$0.001/email). Free tier available.",featured:false,badge:"Budget option",badgeClass:"badge-blue",channels:["Push","In-app","Email","SMS"],note:"Lowest cost option. Push + in-app essentially free or very low. Weaker journey orchestration and lifecycle tooling versus dedicated LCM platforms.",confidence:"Published pricing"},
+  {name:"CleverTap",model:"MAU-based. Essentials $75/mo (5k MAU); Advanced tier custom-quoted above that.",featured:false,badge:"Quote needed",badgeClass:"badge-amber",channels:["Email","Push","In-app","SMS"],note:"Strong real-time analytics and mobile-first tooling. Gartner Leader 2026 for Personalisation Engines. Advanced tier requires sales conversation.",confidence:"Published Essentials + community estimates"},
+  {name:"MoEngage",model:"MAU-based. Standard $999/mo (10k MAU); Growth $4,999/mo (50k MAU).",featured:false,badge:"Quote needed",badgeClass:"badge-amber",channels:["Email","Push","In-app","SMS","WhatsApp"],note:"Strong Sherpa AI for send-time and channel optimisation. WhatsApp is a separate add-on. Annual commit saves ~15–20%.",confidence:"Published Growth tier + Vendr benchmarks"},
+  {name:"Iterable",model:"MAU + volume-based. Growth tier custom quotes.",featured:false,badge:"Quote needed",badgeClass:"badge-amber",channels:["Email","Push","In-app","SMS","Web push"],note:"Strong B2C cross-channel orchestration. Competing quote from MoEngage is an effective negotiation lever.",confidence:"Vendr transaction database"},
+  {name:"Braze",model:"Engagement value-based. Custom only. Core tier entry ~$60k/yr.",featured:false,badge:"Enterprise",badgeClass:"badge-amber",channels:["Email","Push","In-app","SMS","WhatsApp","Content Cards"],note:"Best-in-class mobile SDKs and Canvas Flow journey builder. Likely overkill at current scale unless Content Cards are a requirement.",confidence:"SaasBlueBook Mar 2026 + community benchmarks"},
+  {name:"Airship",model:"MAU-based. Custom quotes only. Push-native heritage.",featured:false,badge:"Quote needed",badgeClass:"badge-amber",channels:["Push","In-app","Email","SMS","Mobile wallet","Web push"],note:"Deepest mobile push expertise of any provider. Strongest for mobile wallet and predictive churn scoring. No public pricing; sales cycle required.",confidence:"Vendr transaction data + StackScored 2026"},
+  {name:"Pushwoosh",model:"Per-MAU omnichannel: $13/1k MAU. All channels included. Fully published pricing.",featured:false,badge:"Transparent pricing",badgeClass:"badge-green",channels:["Push","In-app","Email","SMS","WhatsApp","Web push"],note:"All channels in one MAU unit cost. 20 email sends/MAU included per month. Unlimited push + in-app. Custom plan when estimate exceeds $3k/mo.",confidence:"Published pricing — pushwoosh.com/pricing"},
+  {name:"Knock",model:"Per-message. Starter $250/mo (50k msgs); Enterprise custom.",featured:false,badge:"Developer-first",badgeClass:"badge-blue",channels:["In-app","Email","Push","SMS","Chat (Slack/Teams)"],note:"Notification infrastructure, not a marketing platform — no built-in segmentation or campaign tooling. Best fit if engineering team owns the notification layer.",confidence:"Published pricing — knock.app/pricing"}
+];
+
+function fmtVol(n){return n>=1e6?(n/1e6).toFixed(1)+'M':Math.round(n/1000)+'k'}
+
+let currentScenario = 'avg';
+
+const SCENARIO_MAP = {
+  avg:     { label:'Current MAU', mau: BASE_MAU },
+  '80k':   { label:'80k MAU',     mau: 80000    },
+  '110k':  { label:'110k MAU',    mau: 110000   },
+  compare: { label:'Comparison',  mau: null     },
+};
+
+function setScenario(btn){
+  document.querySelectorAll('.scen-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentScenario = btn.dataset.scen;
+  renderProviders();
+}
+
+function renderVolKey(scen){
+  const el = document.getElementById('volKey');
+  if(scen === 'compare'){
+    el.innerHTML = SCENARIOS.map(s=>{
+      const v = scaleVols(s.mau);
+      return `<div class="vol-key-card"><div class="vk-label">${s.label}</div><div class="vk-row"><span class="vk-k">Email</span><span class="vk-v">${fmtVol(v.email)}/mo</span></div><div class="vk-row"><span class="vk-k">Push & in-app</span><span class="vk-v">${fmtVol(v.push)}/mo</span></div></div>`;
+    }).join('');
+  } else {
+    const s = SCENARIO_MAP[scen];
+    const v = scaleVols(s.mau);
+    el.innerHTML = `<div class="vol-key-card"><div class="vk-label">${s.label}</div><div class="vk-row"><span class="vk-k">Email</span><span class="vk-v">${fmtVol(v.email)}/mo</span></div><div class="vk-row"><span class="vk-k">Push & in-app</span><span class="vk-v">${fmtVol(v.push)}/mo</span></div></div>`;
+  }
+}
+
+function renderProviders(){
+  renderVolKey(currentScenario);
+  const grid = document.getElementById('providerGrid');
+
+  if(currentScenario === 'compare'){
+    grid.style.display = 'none';
+    const wrap = document.getElementById('overviewChartWrap');
+    if(wrap) wrap.style.display = 'none';
+    let existing = document.getElementById('compareView');
+    if(!existing){ existing = document.createElement('div'); existing.id='compareView'; grid.parentNode.insertBefore(existing, grid); }
+    const thClasses = ['th-current','th-80k','th-110k'];
+    const groupHeaders = SCENARIOS.map((s,i)=>`<th colspan="3" class="${thClasses[i]}">${s.label}</th>`).join('');
+    const subHeaders = SCENARIOS.map((_,i)=>`<th class="${i>0?'sub-sep':''}">Low</th><th>Mid</th><th>High</th>`).join('');
+    const rows = providers.map(p=>{
+      const cells = SCENARIOS.map((s,i)=>{
+        const est = estimateAnnual(p.name, s.mau);
+        const mid = Math.round((est.low+est.high)/2);
+        return `<td class="low${i>0?' sep-col':''}">${gbp(est.low)}</td><td class="mid">${gbp(mid)}</td><td class="low">${gbp(est.high)}</td>`;
+      }).join('');
+      return `<tr><td><div style="font-weight:500">${p.name}</div><span class="badge ${p.badgeClass}" style="display:inline-block;margin-top:4px">${p.badge}</span></td>${cells}</tr>`;
+    }).join('');
+    existing.innerHTML = `<div class="compare-wrap"><table class="compare-table"><thead><tr class="scen-group-header"><th></th>${groupHeaders}</tr><tr class="sub-header"><th>Provider</th>${subHeaders}</tr></thead><tbody>${rows}</tbody></table></div>`;
+    return;
+  }
+
+  const existing = document.getElementById('compareView');
+  if(existing) existing.remove();
+  grid.style.display = '';
+
+  const s = SCENARIO_MAP[currentScenario];
+  const wrap = document.getElementById('overviewChartWrap');
+  if(wrap) wrap.style.display = '';
+  const tag = document.getElementById('chartMauTag');
+  if(tag) tag.textContent = s.label;
+  buildOverviewChart(s.mau);
+
+  grid.innerHTML = providers.map(p=>{
+    const est = estimateAnnual(p.name, s.mau);
+    return `<div class="pcard ${p.featured?"featured":""}">
+  <div class="pcard-top"><div class="pname">${p.name}</div><span class="badge ${p.badgeClass}">${p.badge}</span></div>
+  <div class="pmodel">${p.model}</div>
+  <div class="channels">${p.channels.map(c=>`<span class="chip inc">${c}</span>`).join("")}</div>
+  <div class="price-block"><span class="price-est">${gbp(est.low)} – ${gbp(est.high)}</span><span class="price-range">est. annual</span></div>
+  <div class="pnote"><div class="pnote-text">${p.note}</div></div>
+  <div class="conf">${p.confidence}</div>
+</div>`;}).join("");
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  updateAssumptionCells();
+  renderProviders();
+  buildNotifTable();
+});
+
+let overviewChartInstance = null;
+function buildOverviewChart(mau){
+  mau = mau || BASE_MAU;
+  const ctx = document.getElementById("overviewChart");
+  if(!ctx) return;
+  if(overviewChartInstance){ overviewChartInstance.destroy(); overviewChartInstance = null; }
+  const labels=providers.map(p=>p.name);
+  const lows=providers.map(p=>estimateAnnual(p.name,mau).low);
+  const highs=providers.map(p=>estimateAnnual(p.name,mau).high);
+  const mids=providers.map((p,i)=>Math.round((lows[i]+highs[i])/2));
+  overviewChartInstance = new Chart(ctx,{
+    type:"bar",
+    data:{labels,datasets:[
+      {label:"Low",data:lows,backgroundColor:"#a8d0fe",stack:"s",borderRadius:4},
+      {label:"Mid",data:mids.map((m,i)=>m-lows[i]),backgroundColor:"#1F87FE",stack:"s",borderRadius:0},
+      {label:"High",data:highs.map((h,i)=>h-mids[i]),backgroundColor:"#a8d0fe",stack:"s",borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:"#2D3142",titleColor:"#ffffff",bodyColor:"#9ea4b4",borderColor:"rgba(45,49,66,0.2)",borderWidth:1,callbacks:{label:(ctx)=>{const i=ctx.dataIndex;return "Est. range: £"+lows[i].toLocaleString("en-GB")+" – £"+highs[i].toLocaleString("en-GB");},title:(ctx)=>ctx[0].label}}},scales:{x:{grid:{display:false},ticks:{color:"#9ea4b4",font:{family:"'DM Mono', monospace",size:11}}},y:{stacked:true,ticks:{callback:v=>"£"+Math.round(v/1000)+"k",color:"#9ea4b4",font:{family:"'DM Mono', monospace",size:11}},grid:{color:"rgba(45,49,66,0.06)"},border:{color:"rgba(45,49,66,0.1)"}}}}
+  });
+}
+
+function showTab(id, btn){
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+id).classList.add("active");
+  if(btn) btn.classList.add("active");
+  if(id==="growth" && !growthChart) buildGrowthChart();
+}
+
+const PROVIDER_COLORS = {
+  'Customer.io':'#1F87FE','OneSignal':'#20A39E','CleverTap':'#f0a500',
+  'MoEngage':'#e05c2a','Iterable':'#7c5cbf','Braze':'#d63b6e',
+  'Airship':'#2d7a4f','Pushwoosh':'#2D3142','Knock':'#0ea5b0',
+};
+
+const MAU_POINTS = [];
+for(let m = Math.round(BASE_MAU/1000)*1000; m <= 150000; m += 5000) MAU_POINTS.push(m);
+
+let growthChart = null;
+let providerVisibility = {};
+providers.forEach(p => providerVisibility[p.name] = true);
+
+function buildGrowthChart(){
+  const tEl = document.getElementById('growthToggles');
+  if(tEl) tEl.innerHTML = providers.map(p=>{
+    const col = PROVIDER_COLORS[p.name] || '#888';
+    return `<button class="gtoggle" data-name="${p.name}" style="border-color:${col};color:${col}" onclick="toggleProvider(this,'${p.name}')"><span class="gt-dot" style="background:${col}"></span>${p.name}</button>`;
+  }).join('');
+
+  const datasets = [];
+  providers.forEach(p=>{
+    const col = PROVIDER_COLORS[p.name] || '#888';
+    const colAlpha = col+'28';
+    const mids = MAU_POINTS.map(m=>{const e=estimateAnnual(p.name,m);return Math.round((e.low+e.high)/2);});
+    const lows  = MAU_POINTS.map(m => estimateAnnual(p.name, m).low);
+    const highs = MAU_POINTS.map(m => estimateAnnual(p.name, m).high);
+    datasets.push({label:p.name+' band',data:highs,borderColor:'transparent',backgroundColor:colAlpha,fill:'+1',pointRadius:0,tension:0.35,providerName:p.name,isBand:true});
+    datasets.push({label:p.name+' band low',data:lows,borderColor:'transparent',backgroundColor:colAlpha,fill:false,pointRadius:0,tension:0.35,providerName:p.name,isBand:true});
+    datasets.push({label:p.name,data:mids,borderColor:col,backgroundColor:col,borderWidth:2,pointRadius:0,pointHoverRadius:5,tension:0.35,fill:false,providerName:p.name,isBand:false});
+  });
+
+  const ctx = document.getElementById('growthChart');
+  if(!ctx) return;
+  if(growthChart) growthChart.destroy();
+  growthChart = new Chart(ctx,{
+    type:'line',
+    data:{labels:MAU_POINTS.map(m=>Math.round(m/1000)+'k'),datasets},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#2D3142',titleColor:'#ffffff',bodyColor:'#9ea4b4',borderColor:'rgba(45,49,66,0.2)',borderWidth:1,filter:item=>!item.dataset.isBand,callbacks:{title:ctx=>'MAU: '+ctx[0].label,label:ctx=>' '+ctx.dataset.label+': £'+ctx.parsed.y.toLocaleString('en-GB')}}},scales:{x:{grid:{color:'rgba(45,49,66,0.06)'},ticks:{color:'#9ea4b4',font:{family:"'DM Mono', monospace",size:10},autoSkip:false,maxRotation:45},title:{display:true,text:'Monthly active users',color:'#9ea4b4',font:{family:"'DM Mono', monospace",size:10}}},y:{grid:{color:'rgba(45,49,66,0.06)'},border:{color:'rgba(45,49,66,0.1)'},ticks:{callback:v=>'£'+Math.round(v/1000)+'k',color:'#9ea4b4',font:{family:"'DM Mono', monospace",size:10}},title:{display:true,text:'Estimated annual cost (GBP)',color:'#9ea4b4',font:{family:"'DM Mono', monospace",size:10}}}}}
+  });
+}
+
+function toggleProvider(btn, name){
+  providerVisibility[name] = !providerVisibility[name];
+  btn.classList.toggle('off', !providerVisibility[name]);
+  if(!growthChart) return;
+  growthChart.data.datasets.forEach(ds=>{if(ds.providerName===name) ds.hidden=!providerVisibility[name];});
+  growthChart.update();
+}
+
+const notifData=[
+  {type:'absentuser:session',jan:3576,feb:3639,mar:3492,apr:4868},
+  {type:'absentuser:sighting',jan:6108,feb:5689,mar:6366,apr:5743},
+  {type:'badgeaward:create',jan:1813,feb:1474,mar:2267,apr:2304},
+  {type:'birdsuggestion:create',jan:563,feb:462,mar:451,apr:729},
+  {type:'birdsuggestion:update',jan:144,feb:145,mar:159,apr:202},
+  {type:'challenge:ended',jan:609,feb:155,mar:528,apr:562},
+  {type:'challenge:endingsoon',jan:262,feb:222,mar:184,apr:347},
+  {type:'challenge:endingtomorrow',jan:256,feb:183,mar:177,apr:339},
+  {type:'challenge:newlyactive',jan:949,feb:173,mar:312,apr:265},
+  {type:'challenge:startingtomorrow',jan:0,feb:0,mar:2,apr:0},
+  {type:'challengeentry:newleader',jan:149,feb:20,mar:41,apr:55},
+  {type:'challengeentry:success',jan:692,feb:505,mar:948,apr:710},
+  {type:'challengeinvite:newpending',jan:67,feb:2,mar:37,apr:24},
+  {type:'challengeinvite:responded',jan:38,feb:8,mar:3,apr:5},
+  {type:'comment:like',jan:3888,feb:3903,mar:4372,apr:4699},
+  {type:'comment:mention',jan:293,feb:308,mar:288,apr:407},
+  {type:'followuserrequest:create',jan:45,feb:52,mar:54,apr:46},
+  {type:'followuserrequest:update',jan:13,feb:15,mar:17,apr:23},
+  {type:'lowactivity:weekly',jan:2148,feb:2028,mar:2244,apr:2363},
+  {type:'session:comment',jan:1934,feb:1797,mar:1709,apr:1611},
+  {type:'session:like',jan:10860,feb:8984,mar:10357,apr:10204},
+  {type:'sighting:comment',jan:6902,feb:6129,mar:5672,apr:6171},
+  {type:'sighting:like',jan:17873,feb:12614,mar:15685,apr:17589},
+  {type:'sighting:milestone',jan:636,feb:553,mar:580,apr:631},
+  {type:'sighting:unidentified',jan:30686,feb:27236,mar:29470,apr:32572},
+  {type:'tag:create',jan:132,feb:105,mar:174,apr:267},
+  {type:'user:follow',jan:2756,feb:3091,mar:2921,apr:4139},
+];
+
+const MONTHS_ND=['jan','feb','mar','apr'];
+
+function buildNotifTable(){
+  const monthTotals=MONTHS_ND.map(m=>notifData.reduce((s,r)=>s+r[m],0));
+  const annualTotals=monthTotals.reduce((a,b)=>a+b,0)*3;
+  const providerCosts=providers.map(p=>{const e=estimateAnnual(p.name,BASE_MAU);return Math.round((e.low+e.high)/2);}).sort((a,b)=>a-b);
+  const mid=Math.floor(providerCosts.length/2);
+  const medianAnnualCost=providerCosts.length%2===0?(providerCosts[mid-1]+providerCosts[mid])/2:providerCosts[mid];
+  const annualPushVol=rawData.reduce((s,d)=>s+d.push,0)*3;
+  const perNotifGBP=annualPushVol>0?medianAnnualCost/annualPushVol:0;
+  const sorted=[...notifData].sort((a,b)=>b.apr-a.apr);
+  const rows=sorted.map(row=>{
+    const cells=MONTHS_ND.map((m,i)=>{
+      const count=row[m];
+      const total=monthTotals[i];
+      const pct=total>0?(count/total*100).toFixed(1):'0.0';
+      const cost=count*perNotifGBP;
+      const costStr=cost<0.01?'<0.01p':cost<1?(cost*100).toFixed(1)+'p':'£'+(cost).toFixed(2);
+      const sep=i>0?' class="col-sep"':'';
+      return `<td${sep}>${count>0?count.toLocaleString('en-GB'):'—'}</td><td class="pct">${count>0?pct+'%':'—'}</td><td class="cost">${count>0?costStr:'—'}</td>`;
+    }).join('');
+    return `<tr><td>${row.type}</td>${cells}</tr>`;
+  });
+  const totalCells=MONTHS_ND.map((m,i)=>{
+    const total=monthTotals[i];
+    const cost=total*perNotifGBP;
+    const sep=i>0?' class="col-sep"':'';
+    return `<td${sep}>${total.toLocaleString('en-GB')}</td><td class="pct">100%</td><td class="cost">£${cost.toFixed(2)}</td>`;
+  }).join('');
+  rows.push(`<tr><td>Total</td>${totalCells}</tr>`);
+  document.getElementById('notifBody').innerHTML=rows.join('');
+  const medianProviderName=(()=>{const costs=providers.map(p=>({name:p.name,mid:Math.round((estimateAnnual(p.name,BASE_MAU).low+estimateAnnual(p.name,BASE_MAU).high)/2)})).sort((a,b)=>a.mid-b.mid);return costs[Math.floor(costs.length/2)].name;})();
+  document.getElementById('notifNote').innerHTML='Est. cost per notification: <strong>£'+perNotifGBP.toFixed(4)+'</strong> — derived from the median annual provider cost at current MAU ('+fmt(BASE_MAU)+') of <strong>£'+Math.round(medianAnnualCost).toLocaleString('en-GB')+'</strong> divided by annualised push &amp; in-app volume. Median provider by cost: '+medianProviderName+'. Sorted by Apr volume descending.';
+}
+</script>
+</body>
+</html>
