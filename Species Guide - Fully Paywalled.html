@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Species Guide - Fully Paywalled</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Rubik', sans-serif;
+    background: #e8eaf0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px 0;
+  }
+
+  .back-bar {
+    width: 375px;
+    padding: 0 0 12px;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 15px; font-weight: 500; color: #1F87FE;
+    text-decoration: none;
+    font-family: 'Rubik', sans-serif;
+  }
+  .back-btn svg { width: 10px; height: 16px; }
+
+  .phone-wrap { position: relative; width: 375px; }
+
+  .phone-frame {
+    width: 375px;
+    height: 812px;
+    background: #fff;
+    border-radius: 44px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.35), inset 0 0 0 2px #1a1a1a;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .scroll-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll-container::-webkit-scrollbar { display: none; }
+
+  .status-bar {
+    height: 44px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 21px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .time { font-weight: 600; font-size: 14px; color: #2D3142; letter-spacing: -0.28px; }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+
+  .nav-bar {
+    height: 44px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 44px;
+    z-index: 20;
+    border-bottom: 1px solid rgba(214,217,224,0.4);
+  }
+  .back-icon { position: absolute; left: 24px; cursor: pointer; }
+  .nav-title { font-weight: 500; font-size: 20px; color: #2D3142; letter-spacing: 0.2px; }
+
+  .page { background: #fff; padding: 0 0 40px; }
+
+  .species-header { padding: 12px 24px 0; }
+  .species-name { font-weight: 700; font-size: 24px; line-height: 32px; color: #2D3142; letter-spacing: 0.2px; }
+  .species-latin { font-style: italic; font-weight: 400; font-size: 16px; line-height: 24px; color: #8890AE; letter-spacing: 0.2px; }
+
+  .bird-container { display: flex; justify-content: center; padding: 16px 0; }
+
+  .action-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px 16px;
+    border-bottom: 1px solid rgba(214,217,224,0.4);
+  }
+  .gender-tabs { display: flex; align-items: flex-end; }
+  .gtab { font-size: 18px; color: #2D3142; padding: 0 8px 4px; cursor: pointer; border-bottom: 2px solid transparent; }
+  .gtab.active { color: #1F87FE; border-bottom: 2px solid #1F87FE; }
+  .log-btn {
+    background: #1F87FE; color: #fff; border: none; border-radius: 4px;
+    width: 149px; height: 30px;
+    font-family: 'Rubik', sans-serif; font-weight: 500; font-size: 16px; letter-spacing: 0.2px; cursor: pointer;
+  }
+
+  .desc-block { padding: 16px 28px 0; font-weight: 400; font-size: 14px; line-height: 20px; color: #2D3142; letter-spacing: 0.2px; }
+  .desc-truncated {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .desc-faded {
+    position: relative;
+    max-height: calc(20px * 5);
+    overflow: hidden;
+  }
+  .desc-faded::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    pointer-events: none;
+  }
+  .desc-faded .desc-bold { font-weight: 700 !important; }
+
+  .read-more {
+    padding: 10px 28px 0; font-weight: 700; font-size: 14px; line-height: 20px;
+    color: #1F87FE; letter-spacing: 0.2px; display: flex; align-items: center; gap: 4px; cursor: pointer;
+  }
+
+  .sounds-section { padding: 24px 28px 0; position: relative; z-index: 0; }
+  .sounds-heading {
+    font-weight: 700; font-size: 24px; line-height: 32px;
+    color: rgba(45,49,66,0.4); letter-spacing: 0.2px;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  }
+  .audio-card { border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+  .audio-label { font-weight: 500; font-size: 16px; line-height: 24px; color: rgba(0,0,0,0.3); letter-spacing: 0.2px; margin-bottom: 8px; }
+  .audio-row { display: flex; align-items: center; gap: 10px; }
+  .waveform-bars { flex: 1; height: 36px; display: flex; align-items: center; gap: 1.88px; }
+  .bar { width: 3.11px; background: #D9D9D9; border-radius: 16px; flex-shrink: 0; }
+  .play-circle {
+    width: 36px; height: 36px; border-radius: 50%; background: #D9D9D9; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .play-circle svg { margin-left: 3px; }
+  .audio-time { font-size: 12px; line-height: 16px; color: #8890AE; text-align: right; letter-spacing: 0.2px; margin-top: 4px; }
+  .credit { font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(136,144,174,0.5); margin-top: 4px; padding: 0 14px; }
+
+  .fade-wrapper { position: relative; }
+
+  .sounds-fade {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 100%;
+    min-height: 812px;
+    background: linear-gradient(180deg,
+      rgba(80,87,117,0) 0%,
+      rgba(80,87,117,0.2) 20%,
+      rgba(80,87,117,0.55) 45%,
+      #505775 65%,
+      #505775 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .similar-section { padding: 24px 27px 120px; position: relative; z-index: 2; }
+  .similar-heading { font-weight: 700; font-size: 24px; line-height: 32px; color: rgba(45,49,66,0.4); letter-spacing: 0.2px; }
+
+  .modal-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; top: 0;
+    pointer-events: none;
+    z-index: 200;
+    border-radius: 44px;
+    overflow: hidden;
+  }
+  .modal-bg {
+    position: absolute; inset: 0;
+    background: rgba(45,49,66,0);
+    transition: background 0.65s ease;
+  }
+  .modal-sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: transparent;
+    padding: 0;
+    transform: translateY(100%);
+    transition: transform 0.65s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .modal-inner {
+    background: #E3F0FF;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 24px 40px;
+    position: relative;
+  }
+  .modal-sheet.open { transform: translateY(0); }
+  .modal-overlay.open { pointer-events: all; }
+  .modal-overlay.open .modal-bg { background: rgba(45,49,66,0.3); }
+
+  .close-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #2D3142; font-size: 18px; opacity: 0.5;
+  }
+  .birda-logo { font-weight: 700; font-size: 22px; color: #2D3142; margin-bottom: 16px; }
+  .birda-logo span { color: #1F87FE; }
+  .card-title { font-weight: 700; font-size: 20px; line-height: 28px; color: #2D3142; margin-bottom: 20px; }
+  .feature-list { list-style: none; margin-bottom: 24px; }
+  .feature-list li {
+    display: flex; align-items: center; gap: 20px;
+    font-size: 16px; line-height: 24px; color: #2D3142;
+    padding: 10px 0; letter-spacing: 0.2px;
+  }
+  .fi { width: 32px; display: flex; justify-content: center; }
+  .cta-btn {
+    width: 100%; height: 60px;
+    background: linear-gradient(101.27deg, #1F87FE 1.22%, #3FCEE0 100%);
+    border: none; border-radius: 4px;
+    color: #fff; font-family: 'Rubik', sans-serif; font-weight: 600; font-size: 18px;
+    letter-spacing: 0.03em; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .hint { text-align: center; font-size: 12px; color: #aaa; margin-top: 8px; font-family: 'Rubik', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- Back Button -->
+<div class="back-bar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 10 16" fill="none"><path d="M8 1L2 8L8 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Prototypes
+  </a>
+</div>
+
+<div class="phone-wrap">
+<div class="phone-frame">
+  <div class="scroll-container" id="scroller">
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="0.5" fill="#2D3142"/><rect x="4.5" y="5" width="3" height="7" rx="0.5" fill="#2D3142"/><rect x="9" y="2.5" width="3" height="9.5" rx="0.5" fill="#2D3142"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="#2D3142"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="#2D3142"/><path d="M2.5 5.5C4 3.8 5.9 2.8 8 2.8s4 1 5.5 2.7" stroke="#2D3142" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M0 3C2.2.9 5-.1 8 0c3 .1 5.7 1.1 7.8 3" stroke="#2D3142" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M5 8c.8-.9 1.9-1.5 3-1.5s2.2.6 3 1.5" stroke="#2D3142" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0" y="0.5" width="21" height="11" rx="2.5" stroke="#2D3142" stroke-opacity="0.35" stroke-width="1" fill="none"/><rect x="1.5" y="2" width="17" height="8" rx="1.2" fill="#2D3142"/><path d="M22.3 4v4" stroke="#2D3142" stroke-opacity="0.4" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+
+    <div class="nav-bar">
+      <div class="back-icon">
+        <svg width="12" height="20" viewBox="0 0 12 20"><path d="M10 2L2 10l8 8" stroke="#2D3142" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
+      <span class="nav-title">About</span>
+    </div>
+
+    <div class="page">
+
+      <div class="species-header">
+        <div class="species-name">House Sparrow</div>
+        <div class="species-latin">Passer domesticus</div>
+      </div>
+
+      <div class="bird-container">
+        <svg viewBox="0 0 200 155" width="200" height="155" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="148,88 168,98 168,106 148,96" fill="#7a5828"/>
+          <ellipse cx="98" cy="82" rx="55" ry="36" fill="#c8a97a"/>
+          <ellipse cx="103" cy="87" rx="42" ry="21" fill="#a07848" transform="rotate(-10 103 87)"/>
+          <ellipse cx="106" cy="90" rx="30" ry="12" fill="#8a6030" transform="rotate(-10 106 90)"/>
+          <ellipse cx="55" cy="60" rx="26" ry="24" fill="#c8a97a"/>
+          <ellipse cx="53" cy="48" rx="18" ry="13" fill="#8a5c2a"/>
+          <ellipse cx="46" cy="66" rx="10" ry="7" fill="#e8d0b0"/>
+          <ellipse cx="60" cy="74" rx="10" ry="8" fill="#3a2a1a"/>
+          <circle cx="48" cy="56" r="5" fill="#1a1a1a"/>
+          <circle cx="46.5" cy="54.5" r="1.5" fill="#fff"/>
+          <polygon points="30,60 42,57 42,63" fill="#6a6040"/>
+          <line x1="85" y1="116" x2="78" y2="136" stroke="#8a7050" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="100" y1="118" x2="94" y2="138" stroke="#8a7050" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="78" y1="136" x2="68" y2="142" stroke="#8a7050" stroke-width="2" stroke-linecap="round"/>
+          <line x1="78" y1="136" x2="78" y2="144" stroke="#8a7050" stroke-width="2" stroke-linecap="round"/>
+          <line x1="78" y1="136" x2="88" y2="142" stroke="#8a7050" stroke-width="2" stroke-linecap="round"/>
+          <line x1="94" y1="138" x2="84" y2="144" stroke="#8a7050" stroke-width="2" stroke-linecap="round"/>
+          <line x1="94" y1="138" x2="94" y2="146" stroke="#8a7050" stroke-width="2" stroke-linecap="round"/>
+          <line x1="94" y1="138" x2="104" y2="144" stroke="#8a7050" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div class="action-row">
+        <div class="gender-tabs">
+          <div class="gtab active">♂</div>
+          <div class="gtab">♀</div>
+        </div>
+        <button class="log-btn">Log a sighting</button>
+      </div>
+
+      <div class="desc-block">
+        <div class="desc-truncated">The house sparrow (<em>Passer domesticus</em>) is a bird of the sparrow family Passeridae, found in most parts of the world. Females and young birds are coloured pale brown and grey, and males have brighter black, white, and brown markings.</div>
+        <div class="desc-faded">
+          <span class="desc-bold">Identification tips</span><br>
+          They have a varied diet, including fish, crustaceans, as well as some plants and are also scavengers, consuming carrion and food. Females and young birds are coloured pale brown and grey, and males have brighter black, white, and brown markings.
+        </div>
+      </div>
+      <div class="read-more">
+        Start a Birda+ trial to read more
+        <svg width="14" height="16" viewBox="0 0 14 16" fill="none"><rect x="1" y="7" width="12" height="9" rx="2" stroke="#1F87FE" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" stroke="#1F87FE" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+
+      <div class="fade-wrapper">
+        <div class="sounds-section">
+          <div class="sounds-heading">
+            Sounds
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="none"><rect x="1" y="7" width="12" height="9" rx="2" stroke="rgba(45,49,66,0.4)" stroke-width="1.5"/><path d="M4 7V5a3 3 0 0 1 6 0v2" stroke="rgba(45,49,66,0.4)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="audio-card">
+            <div class="audio-label">Song</div>
+            <div class="audio-row">
+              <div class="waveform-bars" id="bars1"></div>
+              <div class="play-circle"><svg width="12" height="14" viewBox="0 0 12 14"><path d="M1 1l10 6L1 13V1z" fill="rgba(255,255,255,0.6)"/></svg></div>
+            </div>
+            <div class="audio-time">0:12</div>
+          </div>
+          <div class="audio-card">
+            <div class="audio-label">Call</div>
+            <div class="audio-row">
+              <div class="waveform-bars" id="bars2"></div>
+              <div class="play-circle"><svg width="12" height="14" viewBox="0 0 12 14"><path d="M1 1l10 6L1 13V1z" fill="rgba(255,255,255,0.6)"/></svg></div>
+            </div>
+            <div class="audio-time">0:18</div>
+          </div>
+          <div class="credit">© Peter Boesman 2025</div>
+        </div>
+
+        <div class="similar-section">
+          <div class="similar-heading">Similar species</div>
+          <div id="similar-heading" style="height:1px;margin-top:190px;"></div>
+        </div>
+
+        <div class="sounds-fade"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-bg"></div>
+    <div class="modal-sheet" id="modalSheet">
+      <div class="modal-inner">
+        <div class="close-btn" id="closeBtn">✕</div>
+        <div class="birda-logo">BIRDA<span>+</span></div>
+        <div class="card-title">Unlock the full Species Guide</div>
+        <ul class="feature-list">
+          <li><span class="fi"><svg width="24" height="22" viewBox="0 0 24 22" fill="none"><path d="M12 2C7 2 3 7 3 11s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="#2D3142" stroke-width="1.8"/><path d="M7 11c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#2D3142" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="11" r="2" fill="#2D3142"/></svg></span>Bird sounds</li>
+          <li><span class="fi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="#2D3142" stroke-width="1.8"/><path d="M12 2.5v19M2.5 12h19" stroke="#2D3142" stroke-width="1.5"/><path d="M4 6.5C6.5 9 9 10.5 12 10.5s5.5-1.5 8-4M4 17.5C6.5 15 9 13.5 12 13.5s5.5 1.5 8 4" stroke="#2D3142" stroke-width="1.5" fill="none"/></svg></span>Distribution maps</li>
+          <li><span class="fi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3C8 3 5 6.5 5 10s3 7.5 7 7.5S19 13.5 19 10s-3-7-7-7z" stroke="#2D3142" stroke-width="1.8"/><path d="M5 19c1.5-2 3.8-3 6-3s4.5 1 6 3" stroke="#2D3142" stroke-width="1.8" stroke-linecap="round"/><path d="M3 13c1-1.5 2.5-2 4-1.5" stroke="#2D3142" stroke-width="1.5" stroke-linecap="round"/></svg></span>Similar species</li>
+          <li><span class="fi"><svg width="24" height="22" viewBox="0 0 24 22" fill="none"><rect x="1" y="4" width="22" height="16" rx="3" stroke="#2D3142" stroke-width="1.8"/><circle cx="12" cy="13" r="3.5" stroke="#2D3142" stroke-width="1.8"/><path d="M8 4l1.5-3h7L18 4" stroke="#2D3142" stroke-width="1.6" stroke-linejoin="round"/></svg></span>Species sightings</li>
+        </ul>
+        <button class="cta-btn">Redeem your FREE week</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="hint">↓ Scroll down to trigger · ↑ Scroll up to dismiss</div>
+</div>
+
+<script>
+(function() {
+  const scroller   = document.getElementById('scroller');
+  const overlay    = document.getElementById('modalOverlay');
+  const sheet      = document.getElementById('modalSheet');
+  const similarEl  = document.getElementById('similar-heading');
+
+  const heights = [36.15,14.46,23.66,36.15,36.15,28.92,30.23,36.15,31.55,17.09,32.86,36.15,36.15,31.55,28.92,28.92,31.55,34.18,31.55,36.15,36.15,30.23,28.92,27.61,31.55,30.23,27.61,26.29,24.98,23,24.98,23,25.63,34.18,34.18];
+  ['bars1','bars2'].forEach(id => {
+    const c = document.getElementById(id);
+    heights.forEach(h => {
+      const b = document.createElement('div');
+      b.className = 'bar';
+      b.style.height = h + 'px';
+      c.appendChild(b);
+    });
+  });
+
+  let modalOpen = false;
+  let armed     = true;
+
+  function openModal() {
+    if (modalOpen) return;
+    modalOpen = true;
+    armed = false;
+    overlay.classList.add('open');
+    sheet.classList.add('open');
+    scroller.style.overflowY = 'hidden';
+  }
+
+  function closeModal() {
+    if (!modalOpen) return;
+    modalOpen = false;
+    overlay.classList.remove('open');
+    sheet.classList.remove('open');
+    scroller.style.overflowY = 'scroll';
+    scroller.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && armed) {
+        openModal();
+      }
+      if (!e.isIntersecting && !armed) {
+        armed = true;
+        closeModal();
+      }
+    });
+  }, { root: scroller, threshold: 0 });
+
+  io.observe(similarEl);
+
+  document.addEventListener('wheel', e => {
+    if (modalOpen && e.deltaY < 0) closeModal();
+  }, { passive: true });
+
+  let ty0 = 0;
+  document.addEventListener('touchstart', e => { ty0 = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (modalOpen && e.touches[0].clientY - ty0 > 20) closeModal();
+  }, { passive: true });
+
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay || e.target.classList.contains('modal-bg')) closeModal();
+  });
+
+  document.getElementById('closeBtn').addEventListener('click', closeModal);
+})();
+</script>
+</body>
+</html>
