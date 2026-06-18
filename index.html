@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birda Prototypes</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    :root {
+      --lime:      #A8E63D;
+      --lime-dark: #7ABF1A;
+      --lime-mid:  #8FD128;
+      --lime-bg:   #EEF9D6;
+      --bg:        #F4F4EE;
+      --card:      #FFFFFF;
+      --t1:        #1C1C1E;
+      --t2:        #636366;
+      --t3:        #AEAEB2;
+      --sep:       #E5E5EA;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--t1);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--sep);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #8FD128, #A8E63D);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-mark svg { width: 20px; height: 20px; }
+    .logo-text {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--t1);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--t2);
+    }
+    .tag {
+      background: var(--lime-bg);
+      color: var(--lime-dark);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 64px 40px 48px;
+    }
+    .hero-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--lime-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -1.2px;
+      line-height: 1.08;
+      margin-bottom: 16px;
+      max-width: 560px;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--t2);
+      line-height: 1.6;
+      max-width: 480px;
+    }
+
+    /* ── Stats row ── */
+    .stats {
+      max-width: 960px;
+      margin: 0 auto 48px;
+      padding: 0 40px;
+      display: flex;
+      gap: 32px;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat-num {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--lime-dark);
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--t2);
+      font-weight: 500;
+    }
+    .stat-divider {
+      width: 1px;
+      background: var(--sep);
+      align-self: stretch;
+    }
+
+    /* ── Section ── */
+    .section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+    .section-count {
+      font-size: 14px;
+      color: var(--t3);
+      font-weight: 500;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Prototype Card ── */
+    .proto-card {
+      background: var(--card);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1.5px solid var(--sep);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .proto-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+      border-color: var(--lime);
+    }
+    .proto-card.coming-soon {
+      opacity: 0.55;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* Card preview area */
+    .card-preview {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-preview .phone-mock {
+      width: 90px;
+      height: 148px;
+      background: white;
+      border-radius: 16px;
+      border: 2px solid rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .phone-mock .mock-status {
+      height: 14px;
+      background: #F4F4EE;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+    }
+    .mock-status span { font-size: 5px; font-weight: 700; color: #1C1C1E; }
+    .phone-mock .mock-nav {
+      background: #F4F4EE;
+      padding: 4px 8px 4px;
+      border-bottom: 0.5px solid #E5E5EA;
+    }
+    .mock-nav-title { font-size: 7px; font-weight: 700; color: #1C1C1E; margin-bottom: 3px; }
+    .mock-search {
+      height: 7px; background: rgba(118,118,128,0.12);
+      border-radius: 3px; margin-bottom: 3px;
+    }
+    .mock-seg {
+      height: 7px; background: rgba(118,118,128,0.12);
+      border-radius: 3px;
+    }
+    .phone-mock .mock-list { padding: 4px 6px; display: flex; flex-direction: column; gap: 3px; }
+    .mock-row {
+      height: 18px; background: white;
+      border-radius: 5px;
+      display: flex; align-items: center; gap: 4px;
+      padding: 0 5px;
+      border: 0.5px solid #F0F0F0;
+    }
+    .mock-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .mock-lines { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .mock-line { height: 2.5px; background: #E5E5EA; border-radius: 1px; }
+    .mock-line.short { width: 60%; }
+    .mock-check {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Coming soon phone */
+    .coming-mock {
+      width: 90px; height: 148px;
+      background: white;
+      border-radius: 16px;
+      border: 2px dashed var(--sep);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 2;
+    }
+    .coming-mock svg { width: 28px; height: 28px; color: var(--t3); }
+
+    /* Decorative bg blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(24px);
+      opacity: 0.55;
+    }
+
+    /* Card body */
+    .card-body {
+      padding: 16px 18px 18px;
+      border-top: 1px solid var(--sep);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    .card-status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .status-live     { background: var(--lime-bg); color: var(--lime-dark); }
+    .status-soon     { background: #F2F2F7; color: var(--t2); }
+    .status-progress { background: #FFF3CD; color: #856404; }
+    .card-desc {
+      font-size: 13px;
+      color: var(--t2);
+      line-height: 1.5;
+    }
+    .card-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .meta-item {
+      font-size: 12px;
+      color: var(--t3);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .meta-item svg { width: 12px; height: 12px; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--sep);
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    footer p { font-size: 13px; color: var(--t3); }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M3 13C5 9 8 7 12 8C14 8.5 15.5 10 16 12" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="16.5" cy="7.5" r="2.5" fill="white"/>
+        <path d="M2 16 Q10 12 18 16" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+      </svg>
+    </div>
+    <span class="logo-text">Birda</span>
+  </a>
+  <div class="header-right">
+    <span class="tag">Prototypes</span>
+  </div>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">Design & Product</div>
+  <h1>Birda Prototype Library</h1>
+  <p>Interactive HTML prototypes for exploring features, flows, and ideas before they're built.</p>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat">
+    <span class="stat-num">1</span>
+    <span class="stat-label">Live prototype</span>
+  </div>
+</div>
+
+<!-- Prototypes section -->
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">All Prototypes</h2>
+    <span class="section-count">1 prototype</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- ── UK Birds List ── LIVE -->
+    <a class="proto-card" href="uk-birds.html">
+      <div class="card-preview" style="background: linear-gradient(135deg, #EEF9D6 0%, #D4F49E 100%);">
+        <div class="blob" style="width:120px;height:120px;background:#A8E63D;top:-20px;right:-20px;"></div>
+        <div class="blob" style="width:80px;height:80px;background:#8FD128;bottom:-10px;left:10px;"></div>
+        <div class="phone-mock">
+          <div class="mock-status">
+            <span>9:41</span>
+            <span>●●●</span>
+          </div>
+          <div class="mock-nav">
+            <div class="mock-nav-title">UK Birds</div>
+            <div class="mock-search"></div>
+            <div class="mock-seg"></div>
+          </div>
+          <div class="mock-list">
+            <div class="mock-row" style="background:#EEF9D6;border-color:#C9F07A;">
+              <div class="mock-dot" style="background:linear-gradient(135deg,#F4511E,#D84315)"></div>
+              <div class="mock-lines"><div class="mock-line"></div><div class="mock-line short"></div></div>
+              <div class="mock-check" style="background:#A8E63D"></div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-dot" style="background:linear-gradient(135deg,#1E88E5,#1565C0)"></div>
+              <div class="mock-lines"><div class="mock-line"></div><div class="mock-line short"></div></div>
+              <div class="mock-check" style="border:1.5px solid #E5E5EA"></div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-dot" style="background:linear-gradient(135deg,#EF6C00,#E65100)"></div>
+              <div class="mock-lines"><div class="mock-line"></div><div class="mock-line short"></div></div>
+              <div class="mock-check" style="border:1.5px solid #E5E5EA"></div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-dot" style="background:linear-gradient(135deg,#F9A825,#E65100)"></div>
+              <div class="mock-lines"><div class="mock-line"></div><div class="mock-line short"></div></div>
+              <div class="mock-check" style="border:1.5px solid #E5E5EA"></div>
+            </div>
+            <div class="mock-row" style="background:#EEF9D6;border-color:#C9F07A;">
+              <div class="mock-dot" style="background:linear-gradient(135deg,#455A64,#263238)"></div>
+              <div class="mock-lines"><div class="mock-line"></div><div class="mock-line short"></div></div>
+              <div class="mock-check" style="background:#A8E63D"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="card-title">UK Species List</span>
+          <span class="card-status status-live">● Live</span>
+        </div>
+        <p class="card-desc">Tick-off list of 50 common UK bird species with rarity badges and dimorphism indicators.</p>
+        <div class="card-meta">
+          <span class="meta-item">
+            <svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5v3l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            Mobile
+          </span>
+          <span class="meta-item">
+            <svg viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h4M4 7h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            Species discovery
+          </span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <p>Birda Design & Product — Internal prototype library</p>
+  <p>Not for external distribution</p>
+</footer>
+
+</body>
+</html>
